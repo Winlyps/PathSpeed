@@ -21,15 +21,12 @@ class PathSpeedConfig(private val plugin: JavaPlugin) {
         EntityType.DONKEY,
         EntityType.CAMEL,
         EntityType.LLAMA,
-        EntityType.TRADER_LLAMA
+        EntityType.TRADER_LLAMA,
+        EntityType.PIG,
     )
     var enablePlayerSpeed = true
         private set
-    var enableEntitySpeed = true
-        private set
     var playerSpeedLevel = 1
-        private set
-    var entitySpeedLevel = 1
         private set
     val gracePeriodMs: Long get() = 200L
     val cleanupTaskInterval: Long get() = 4L
@@ -45,24 +42,20 @@ class PathSpeedConfig(private val plugin: JavaPlugin) {
         )
     val entitySpeedEffect: PotionEffect
         get() = PotionEffect(
-            PotionEffectType.SPEED, 40, entitySpeedLevel - 1, false, false, false
+            PotionEffectType.SPEED, 40, playerSpeedLevel - 1, false, false, false
         )
 
     fun reload() {
-        enablePlayerSpeed = config.getBoolean("enable-player-speed", true)
-        enableEntitySpeed = config.getBoolean("enable-entity-speed", true)
-        playerSpeedLevel = config.getInt("player-speed-level", 1).coerceIn(1, 10)
-        entitySpeedLevel = config.getInt("entity-speed-level", 1).coerceIn(1, 10)
+        enablePlayerSpeed = config.getBoolean("enable-path-speed", true)
+        playerSpeedLevel = config.getInt("path-speed-level", 1).coerceIn(1, 10)
         pathBlocks = config.getStringList("path-blocks")
             .mapNotNull { runCatching { Material.valueOf(it) }.getOrNull() }
             .toMutableSet()
     }
 
     fun saveToConfig() {
-        config.set("enable-player-speed", enablePlayerSpeed)
-        config.set("enable-entity-speed", enableEntitySpeed)
-        config.set("player-speed-level", playerSpeedLevel)
-        config.set("entity-speed-level", entitySpeedLevel)
+        config.set("enable-path-speed", enablePlayerSpeed)
+        config.set("path-speed-level", playerSpeedLevel)
         config.set("path-blocks", pathBlocks.map { it.name })
     }
 }

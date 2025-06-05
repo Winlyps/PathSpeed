@@ -29,11 +29,7 @@ class PathManager(
         val uuid = entity.uniqueId
         if (recentlyDismountedEntities.containsKey(uuid)) return
 
-        if (entity is Player && !config.enablePlayerSpeed) {
-            removeFromPath(entity)
-            return
-        }
-        if (entity !is Player && !config.enableEntitySpeed) {
+        if (!config.enablePlayerSpeed) {
             removeFromPath(entity)
             return
         }
@@ -110,18 +106,14 @@ class PathManager(
     }
 
     private fun applySpeedEffect(entity: LivingEntity) {
-        if (entity is Player && !config.enablePlayerSpeed) {
-            entity.removePotionEffect(PotionEffectType.SPEED)
-            return
-        }
-        if (entity !is Player && !config.enableEntitySpeed) {
+        if (!config.enablePlayerSpeed) {
             entity.removePotionEffect(PotionEffectType.SPEED)
             return
         }
         val currentEffect = entity.getPotionEffect(PotionEffectType.SPEED)
         if (currentEffect == null || currentEffect.duration < config.effectRefreshThreshold) {
             if (currentEffect != null) entity.removePotionEffect(PotionEffectType.SPEED)
-            val effect = if (entity is Player) config.playerSpeedEffect else config.entitySpeedEffect
+            val effect = config.playerSpeedEffect // playerSpeedEffect is used for both
             entity.addPotionEffect(effect, true)
         }
     }
@@ -214,11 +206,7 @@ class PathManager(
         entitiesOnPath.forEach { uuid ->
             val entity = plugin.server.getEntity(uuid) as? LivingEntity
             if (entity != null && entity.isValid && !recentlyDismountedEntities.containsKey(uuid)) {
-                if (entity is Player && !config.enablePlayerSpeed) {
-                    removeFromPath(entity)
-                    return@forEach
-                }
-                if (entity !is Player && !config.enableEntitySpeed) {
+                if (!config.enablePlayerSpeed) {
                     removeFromPath(entity)
                     return@forEach
                 }
