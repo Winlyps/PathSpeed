@@ -1,0 +1,5 @@
+name: PathSpeed
+version: '1.0.0'
+main: winlyps.pathSpeed.PathSpeed
+api-version: '1.20'
+authors: [ Winlyps ]
