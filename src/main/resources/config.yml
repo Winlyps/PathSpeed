@@ -1,0 +1,6 @@
+enable-player-speed: true
+enable-entity-speed: true
+player-speed-level: 1
+entity-speed-level: 1
+path-blocks:
+  - DIRT_PATH

@@ -1,5 +1,15 @@
 name: PathSpeed
 version: '1.0.0'
 main: winlyps.pathSpeed.PathSpeed
-api-version: '1.20'
+api-version: '1.16'
 authors: [ Winlyps ]
+commands:
+  pathspeed:
+    description: PathSpeed management command
+    usage: /pathspeed reload|add|remove|list
+    permission: pathspeed.admin
+    permission-message: You do not have permission.
+permissions:
+  pathspeed.admin:
+    description: Allows use of /pathspeed commands
+    default: op
