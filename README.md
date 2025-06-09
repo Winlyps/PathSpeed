@@ -1,7 +1,7 @@
 # PathSpeed
 Required Plugin: https://modrinth.com/plugin/kotlinplugins
 
-Grants a configurable speed boost to players and riden mounts (horses, mules, donkeys, camels, llamas, trader llamas, pigs) when sprinting+jumping or riding a mount on specified path blocks (e.g., DIRT_PATH).
+Grants a configurable speed boost to players and riden mounts (horses, mules, donkeys, camels, llamas, trader llamas, pigs) when standing, walking, sprinting+jumping or riding a mount on specified path blocks (e.g., DIRT_PATH).
 - Commands to add/remove/check "path" blocks: 
 - ```/pathspeed add <ClickTabToAutoComplete>```
 - ```/pathspeed remove <ClickTabToAutoComplete>```
