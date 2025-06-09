@@ -29,14 +29,24 @@ class PathManager(
         val uuid = entity.uniqueId
         if (recentlyDismountedEntities.containsKey(uuid)) return
 
-        if (!config.enablePlayerSpeed) {
-            removeFromPath(entity)
+        // Only apply speed to players if not riding
+        if (entity is Player) {
+            if (!entity.isInsideVehicle && config.enablePlayerSpeed) {
+                lastOnPathTime[uuid] = System.currentTimeMillis()
+                entitiesOnPath.add(uuid)
+                applySpeedEffect(entity)
+            } else {
+                removeFromPath(entity)
+            }
             return
         }
 
-        lastOnPathTime[uuid] = System.currentTimeMillis()
-        entitiesOnPath.add(uuid)
-        applySpeedEffect(entity)
+        // Apply speed to supported mounts, always
+        if (config.supportedEntityTypes.contains(entity.type)) {
+            lastOnPathTime[uuid] = System.currentTimeMillis()
+            entitiesOnPath.add(uuid)
+            applySpeedEffect(entity)
+        }
     }
 
     fun handleEntityOffPath(entity: LivingEntity) {
@@ -89,32 +99,26 @@ class PathManager(
         return entitiesOnPath.contains(uuid)
     }
 
+    // Checks block directly under and two blocks below (jump smoothness!)
     fun isLocationNearPath(location: Location): Boolean {
         val world = location.world ?: return false
         val x = location.blockX
         val y = location.blockY
         val z = location.blockZ
-        for (xOffset in -config.pathDetectionRadius..config.pathDetectionRadius) {
-            for (zOffset in -config.pathDetectionRadius..config.pathDetectionRadius) {
-                for (yOffset in 1..config.pathDetectionDepth) {
-                    val block = world.getBlockAt(x + xOffset, y - yOffset, z + zOffset)
-                    if (config.pathBlocks.contains(block.type)) return true
-                }
-            }
+        for (yOffset in 0..2) {
+            val block = world.getBlockAt(x, y - yOffset, z)
+            if (config.pathBlocks.contains(block.type)) return true
         }
         return false
     }
 
+    // Flicker-proof: effect is always refreshed well before it expires
     private fun applySpeedEffect(entity: LivingEntity) {
-        if (!config.enablePlayerSpeed) {
-            entity.removePotionEffect(PotionEffectType.SPEED)
-            return
-        }
+        val targetEffect = if (entity is Player) config.playerSpeedEffect else config.entitySpeedEffect
         val currentEffect = entity.getPotionEffect(PotionEffectType.SPEED)
         if (currentEffect == null || currentEffect.duration < config.effectRefreshThreshold) {
-            if (currentEffect != null) entity.removePotionEffect(PotionEffectType.SPEED)
-            val effect = config.playerSpeedEffect // playerSpeedEffect is used for both
-            entity.addPotionEffect(effect, true)
+            entity.removePotionEffect(PotionEffectType.SPEED)
+            entity.addPotionEffect(targetEffect, true)
         }
     }
 
@@ -135,6 +139,31 @@ class PathManager(
     fun startTasks() {
         startCleanupTask()
         startEffectRefreshTask()
+    }
+
+    fun startPlayerEffectTask() {
+        object : BukkitRunnable() {
+            override fun run() {
+                for (player in plugin.server.onlinePlayers) {
+                    // PLAYER ON FOOT
+                    if (isLocationNearPath(player.location) && !player.isInsideVehicle) {
+                        handleEntityOnPath(player)
+                    } else {
+                        handleEntityOffPath(player)
+                    }
+
+                    // PLAYER RIDING A MOUNT
+                    val vehicle = player.vehicle
+                    if (vehicle is LivingEntity && config.supportedEntityTypes.contains(vehicle.type)) {
+                        if (isLocationNearPath(vehicle.location)) {
+                            handleEntityOnPath(vehicle)
+                        } else {
+                            handleEntityOffPath(vehicle)
+                        }
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 0L, config.effectRefreshInterval)
     }
 
     fun cleanup() {
@@ -206,7 +235,7 @@ class PathManager(
         entitiesOnPath.forEach { uuid ->
             val entity = plugin.server.getEntity(uuid) as? LivingEntity
             if (entity != null && entity.isValid && !recentlyDismountedEntities.containsKey(uuid)) {
-                if (!config.enablePlayerSpeed) {
+                if (entity is Player && (!config.enablePlayerSpeed || entity.isInsideVehicle)) {
                     removeFromPath(entity)
                     return@forEach
                 }

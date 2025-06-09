@@ -20,9 +20,10 @@ class PathSpeed : JavaPlugin() {
         server.pluginManager.registerEvents(playerEventHandler, this)
         server.pluginManager.registerEvents(entityEventHandler, this)
         pathManager.startTasks()
+        pathManager.startPlayerEffectTask() // Required for always-on walking/standing check
 
         val cmd = getCommand("pathspeed")
-        val completer = PathSpeedCommand(this, configInstance, pathManager) // pass pathManager here
+        val completer = PathSpeedCommand(this, configInstance, pathManager)
         cmd?.setExecutor(completer)
         cmd?.tabCompleter = completer
 

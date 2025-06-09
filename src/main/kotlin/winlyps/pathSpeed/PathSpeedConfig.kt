@@ -30,19 +30,19 @@ class PathSpeedConfig(private val plugin: JavaPlugin) {
         private set
     val gracePeriodMs: Long get() = 200L
     val cleanupTaskInterval: Long get() = 4L
-    val effectRefreshInterval: Long get() = 4L
-    val effectRefreshThreshold: Int get() = 10
+    val effectRefreshInterval: Long get() = 10L // every 0.5s
+    val effectRefreshThreshold: Int get() = 20 // 20 ticks (1s)
     val joinCheckDelay: Long get() = 1L
     val worldChangeCheckDelay: Long get() = 1L
     val pathDetectionRadius: Int get() = 1
     val pathDetectionDepth: Int get() = 5
     val playerSpeedEffect: PotionEffect
         get() = PotionEffect(
-            PotionEffectType.SPEED, 40, playerSpeedLevel - 1, false, false, false
+            PotionEffectType.SPEED, 60, playerSpeedLevel - 1, false, false, false // 60 ticks = 3s
         )
     val entitySpeedEffect: PotionEffect
         get() = PotionEffect(
-            PotionEffectType.SPEED, 40, playerSpeedLevel - 1, false, false, false
+            PotionEffectType.SPEED, 60, playerSpeedLevel - 1, false, false, false
         )
 
     fun reload() {
